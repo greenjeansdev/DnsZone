@@ -4,12 +4,18 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using DnsZone.Parser;
+using DnsZone.Records;
 using DnsZone.Tokens;
 
 namespace DnsZone {
     public class DnsZone {
 
+        private static ResourceRecordReader _reader = new ResourceRecordReader();
+
         public IList<DnzZoneInclude> Includes { get; } = new List<DnzZoneInclude>();
+
+        public IList<ResourceRecord> Records { get; } = new List<ResourceRecord>();
 
         public static DnsZone Parse(string content) {
             var zone = new DnsZone();
@@ -20,21 +26,28 @@ namespace DnsZone {
             var tokens = tokenizer.Read(source).ToArray();
             var context = new DnsZoneParseContext(zone, tokens);
             while (!context.IsEof) {
-                var token = context.Tokens.Dequeue();
+                var token = context.Tokens.Peek();
                 switch (token.Type) {
                     case TokenType.NewLine:
+                        context.Tokens.Dequeue();
                         break;
                     case TokenType.Control:
-                        ProcessControlDirective(context, token.StringValue);
+                        ProcessControlDirective(context);
                         break;
                     case TokenType.Literal:
+                    case TokenType.At:
+                        ParseResourceRecord(context);
                         break;
+                    default:
+                        throw new NotSupportedException($"not supported type {token.Type}");
                 }
             }
             return zone;
         }
 
-        private static void ProcessControlDirective(DnsZoneParseContext context, string directive) {
+        private static void ProcessControlDirective(DnsZoneParseContext context) {
+            var token = context.Tokens.Dequeue();
+            var directive = token.StringValue;
             switch (directive.ToUpperInvariant()) {
                 case "ORIGIN":
                     context.Origin = context.Tokens.Dequeue().StringValue;
@@ -56,45 +69,37 @@ namespace DnsZone {
                     }
                     break;
                 case "TTL":
-                    context.DefaultTtl = ParseTtl(context.Tokens.Dequeue().StringValue);
+                    context.DefaultTtl = context.ReadTimeSpan();
                     break;
                 default:
                     throw new NotSupportedException($"Unknown control directive '{directive}'");
             }
         }
 
-        private static TimeSpan ParseTtl(string val) {
-            var res = TimeSpan.Zero;
-            int? part = null;
-            foreach (var ch in val) {
-                if (ch >= '0' && ch <= '9') {
-                    part = (part ?? 0) * 10 + (ch - '0');
-                } else {
-                    if (part == null) throw new Exception("TTL value expected");
-                    switch (char.ToUpper(ch)) {
-                        case 'w':
-                            res += TimeSpan.FromDays(part.Value * 7);
-                            break;
-                        case 'd':
-                            res += TimeSpan.FromDays(part.Value);
-                            break;
-                        case 'h':
-                            res += TimeSpan.FromHours(part.Value);
-                            break;
-                        case 'm':
-                            res += TimeSpan.FromMinutes(part.Value);
-                            break;
-                        case 's':
-                            res += TimeSpan.FromSeconds(part.Value);
-                            break;
-                    }
-                    part = null;
-                }
+        private static void ParseResourceRecord(DnsZoneParseContext context) {
+            string @class;
+            TimeSpan? ttl;
+
+            var name = context.Tokens.Peek().Type == TokenType.Whitespace ? null : context.ReadDomainName();
+
+            if (context.TryParseClass(out @class)) {
+                context.TryParseTtl(out ttl);
+            } else if (context.TryParseTtl(out ttl)) {
+                context.TryParseClass(out @class);
             }
-            if (part != null) {
-                res += TimeSpan.FromSeconds(part.Value);
-            }
-            return res;
+
+            var type = context.ReadResourceRecordType();
+
+            var record = DnsZoneUtils.CreateRecord(type);
+            record.Name = context.GetDomainName(name);
+            record.Class = context.GetClass(@class);
+            record.Ttl = context.GetTimeSpan(ttl);
+
+            record.AcceptVistor(_reader, context);
+
+            context.Zone.Records.Add(record);
+
+            context.DefaultClass = record.Class;
         }
 
         public static async Task<DnsZone> LoadAsync(string uri) {

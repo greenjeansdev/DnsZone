@@ -3,6 +3,7 @@
         None,
         QuotedString,
         Literal,
+        Whitespace,
         NewLine,
 
         Control,

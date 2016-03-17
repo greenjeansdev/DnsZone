@@ -42,8 +42,16 @@
   <ItemGroup>
     <Compile Include="DnsZone.cs" />
     <Compile Include="DnsZoneParseContext.cs" />
+    <Compile Include="DnsZoneUtils.cs" />
+    <Compile Include="Parser\ResourceRecordReader.cs" />
+    <Compile Include="Records\AAAAResourceRecord.cs" />
+    <Compile Include="Records\IResourceRecordVisitor.cs" />
+    <Compile Include="Records\MxResourceRecord.cs" />
+    <Compile Include="Records\AResourceRecord.cs" />
+    <Compile Include="Records\NsResourceRecord.cs" />
     <Compile Include="Records\ResourceRecord.cs" />
     <Compile Include="Records\ResourceRecordType.cs" />
+    <Compile Include="Records\SoaResourceRecord.cs" />
     <Compile Include="Tokens\Token.cs" />
     <Compile Include="Tokens\TokenException.cs" />
     <Compile Include="Tokens\Tokenizer.cs" />

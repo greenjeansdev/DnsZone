@@ -99,6 +99,16 @@ namespace DnsZone.Tokens {
                 var position = new TokenPosition { File = source, Line = lineNumber, LineStart = lineStart };
 
                 var ch = content[pos++];
+
+                if (char.IsWhiteSpace(ch) && pos == lineStart) {
+                    yield return new Token {
+                        Type = TokenType.Whitespace,
+                        Position = position,
+                        StringValue = ""
+                    };
+                    SkipWhitespace(ref content, ref pos);
+                    continue;
+                }
                 switch (ch) {
                     case '$':
                         yield return new Token {
@@ -123,12 +133,14 @@ namespace DnsZone.Tokens {
                         break;
                     case '(':
                         parentheses++;
+                        SkipWhitespace(ref content, ref pos);
                         break;
                     case ')':
                         if (parentheses <= 0) throw new TokenException("unexpected closing parentheses", new Token {
                             Position = position
                         });
                         parentheses--;
+                        SkipWhitespace(ref content, ref pos);
                         break;
                     case '\r':
                     case '\n':

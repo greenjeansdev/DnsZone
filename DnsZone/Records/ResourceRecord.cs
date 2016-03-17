@@ -7,9 +7,10 @@ namespace DnsZone.Records {
 
         public string Class { get; set; }
 
-        public abstract ResourceRecordType Type { get; }
-
         public TimeSpan Ttl { get; set; }
 
+        public abstract ResourceRecordType Type { get; }
+
+        public abstract TResult AcceptVistor<TArg, TResult>(IResourceRecordVisitor<TArg, TResult> visitor, TArg arg);
     }
 }

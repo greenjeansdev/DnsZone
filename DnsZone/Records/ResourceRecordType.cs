@@ -1,7 +1,7 @@
 ﻿namespace DnsZone.Records {
     public enum ResourceRecordType {
-
         A,
+        AAAA,
         NS,
         MD,
         MF,
