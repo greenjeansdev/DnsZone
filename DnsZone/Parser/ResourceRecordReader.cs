@@ -13,9 +13,14 @@ namespace DnsZone.Parser {
             return record;
         }
 
+        public ResourceRecord Visit(CNameResourceRecord record, DnsZoneParseContext context) {
+            record.CanonicalName = context.ReadDomainName();
+            return record;
+        }
+
         public ResourceRecord Visit(MxResourceRecord record, DnsZoneParseContext context) {
             record.Preference = context.ReadPreference();
-            record.Exchange= context.ReadDomainName();
+            record.Exchange = context.ReadDomainName();
             return record;
         }
 

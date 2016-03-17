@@ -1,4 +1,6 @@
-﻿using NUnit.Framework;
+﻿using System.Linq;
+using DnsZone.Records;
+using NUnit.Framework;
 
 namespace DnsZone.Tests {
     [TestFixture]
@@ -25,6 +27,11 @@ mail          IN  A     192.0.2.3             ; IPv4 address for mail.example.co
 mail2         IN  A     192.0.2.4             ; IPv4 address for mail2.example.com
 mail3         IN  A     192.0.2.5             ; IPv4 address for mail3.example.com";
             var zone = DnsZone.Parse(str);
+            Assert.AreEqual(1, zone.Records.OfType<SoaResourceRecord>().Count());
+            Assert.AreEqual(2, zone.Records.OfType<NsResourceRecord>().Count());
+            Assert.AreEqual(3, zone.Records.OfType<MxResourceRecord>().Count());
+            Assert.AreEqual(5, zone.Records.OfType<AResourceRecord>().Count());
+            Assert.AreEqual(2, zone.Records.OfType<CNameResourceRecord>().Count());
         }
     }
 }

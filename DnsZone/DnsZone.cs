@@ -35,7 +35,6 @@ namespace DnsZone {
                         ProcessControlDirective(context);
                         break;
                     case TokenType.Literal:
-                    case TokenType.At:
                         ParseResourceRecord(context);
                         break;
                     default:

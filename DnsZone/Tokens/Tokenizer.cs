@@ -125,12 +125,6 @@ namespace DnsZone.Tokens {
                             Position = position
                         };
                         break;
-                    case '@':
-                        yield return new Token {
-                            Type = TokenType.At,
-                            Position = position
-                        };
-                        break;
                     case '(':
                         parentheses++;
                         SkipWhitespace(ref content, ref pos);

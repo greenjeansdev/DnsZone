@@ -32,7 +32,6 @@ namespace DnsZone {
 
         public string ReadDomainName() {
             var token = Tokens.Dequeue();
-            if (token.Type == TokenType.At) return "@";
             if (token.Type != TokenType.Literal) throw new TokenException("domain name expected", token);
             return token.StringValue;
         }
@@ -120,5 +119,18 @@ namespace DnsZone {
             return false;
         }
 
+        private void SkipWhiteAndComments() {
+            while (!IsEof) {
+                var token = Tokens.Peek();
+                switch (token.Type) {
+                    case TokenType.Whitespace: 
+                    case TokenType.Comments:
+                        Tokens.Dequeue();
+                        break;
+                    default:
+                        return;
+                }
+            }
+        }
     }
 }

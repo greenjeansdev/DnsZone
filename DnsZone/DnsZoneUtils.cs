@@ -34,7 +34,7 @@ namespace DnsZone {
                 case ResourceRecordType.NS: return new NsResourceRecord();
                 //case ResourceRecordType.MD: return ResourceRecordType.MD;
                 //case ResourceRecordType.MF: return ResourceRecordType.MF;
-                //case ResourceRecordType.CNAME: return ResourceRecordType.CNAME;
+                case ResourceRecordType.CNAME: return new CNameResourceRecord();
                 case ResourceRecordType.SOA: return new SoaResourceRecord();
                 //case ResourceRecordType.MB: return ResourceRecordType.MB;
                 //case ResourceRecordType.MG: return ResourceRecordType.MG;

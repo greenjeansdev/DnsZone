@@ -5,6 +5,8 @@
 
         TResult Visit(AAAAResourceRecord record, TArg arg);
 
+        TResult Visit(CNameResourceRecord record, TArg arg);
+
         TResult Visit(MxResourceRecord record, TArg arg);
 
         TResult Visit(NsResourceRecord record, TArg arg);
