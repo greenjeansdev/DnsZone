@@ -1,0 +1,172 @@
+﻿using System.Collections.Generic;
+
+namespace DnsZone.Tokens {
+    public class Tokenizer {
+
+        private static void SkipWhitespace(ref string content, ref int chIndex) {
+            while (chIndex < content.Length) {
+                var ch = content[chIndex];
+                if (ch != ' ' && ch != '\t') return;
+                chIndex++;
+            }
+        }
+
+        private static void SkipOne(ref string content, ref int chIndex, char match) {
+            if (chIndex < content.Length) {
+                if (content[chIndex] == match) {
+                    chIndex++;
+                }
+            }
+        }
+
+        private static void SkipLine(ref string content, ref int pos) {
+            while (pos < content.Length) {
+                var ch = content[pos++];
+                if (ch == 0x0d) {
+                    SkipOne(ref content, ref pos, (char)0x0a);
+                    return;
+                }
+                if (ch == 0x0a) {
+                    SkipOne(ref content, ref pos, (char)0x0d);
+                    return;
+                }
+            }
+        }
+
+        private static void SkipNewLineChar(ref string content, ref int pos, char firstChar) {
+            SkipOne(ref content, ref pos, firstChar == '\n' ? '\r' : '\n');
+        }
+
+        private static char ReadCharCode(ref string content, ref int pos, ref TokenPosition position) {
+            int code = 0;
+            for (var i = 0; i < 3; i++) {
+                if (pos >= content.Length) throw new TokenException("unexpected end of escape sequence", new Token { Position = position });
+                var ch = content[pos++];
+                if (ch < '0' || ch > '9') throw new TokenException("unexpected escape sequence", new Token { Position = position });
+                code = code * 10 + (ch - '0');
+            }
+            return (char)code;
+        }
+
+        private static string ReadString(ref string content, ref int pos, ref TokenPosition position) {
+            var quoteCh = content[pos++];
+            var token = "";
+            while (pos < content.Length) {
+                var ch = content[pos++];
+                if (ch == '\r' || ch == '\n') {
+                    throw new TokenException("missing end quote", new Token { Position = position });
+                }
+                if (ch == '\\') {
+                    if (pos >= content.Length) throw new TokenException("unexpected end of escape sequence", new Token { Position = position });
+                    ch = content[pos];
+                    if (char.IsDigit(ch)) {
+                        ch = ReadCharCode(ref content, ref pos, ref position);
+                        token += ch;
+                    } else {
+                        pos++;
+                        token += ch;
+                    }
+                } else if (ch == quoteCh) {
+                    return token;
+                } else {
+                    token += ch;
+                }
+            }
+            throw new TokenException("missing end quote", new Token { Position = position });
+        }
+
+        private static string ReadCharacterString(ref string content, ref int chIndex) {
+            var token = "";
+            while (chIndex < content.Length) {
+                var ch = content[chIndex++];
+                if (char.IsWhiteSpace(ch)) {
+                    SkipWhitespace(ref content, ref chIndex);
+                    return token;
+                }
+                token += ch;
+            }
+            return token;
+        }
+
+        public IEnumerable<Token> Read(FileSource source) {
+            var content = source.Content;
+            var pos = 0;
+            var lineNumber = 1;
+            var lineStart = 0;
+            var parentheses = 0;
+            while (pos < content.Length) {
+                if (pos >= content.Length) break;
+                var position = new TokenPosition { File = source, Line = lineNumber, LineStart = lineStart };
+
+                var ch = content[pos++];
+                switch (ch) {
+                    case '$':
+                        yield return new Token {
+                            Type = TokenType.Control,
+                            Position = position,
+                            StringValue = ReadCharacterString(ref content, ref pos)
+                        };
+                        break;
+                    case '"':
+                        pos--;
+                        yield return new Token {
+                            Type = TokenType.QuotedString,
+                            StringValue = ReadString(ref content, ref pos, ref position),
+                            Position = position
+                        };
+                        break;
+                    case '@':
+                        yield return new Token {
+                            Type = TokenType.At,
+                            Position = position
+                        };
+                        break;
+                    case '(':
+                        parentheses++;
+                        break;
+                    case ')':
+                        if (parentheses <= 0) throw new TokenException("unexpected closing parentheses", new Token {
+                            Position = position
+                        });
+                        parentheses--;
+                        break;
+                    case '\r':
+                    case '\n':
+                        SkipNewLineChar(ref content, ref pos, ch);
+                        lineNumber++;
+                        lineStart = pos;
+                        yield return new Token {
+                            Type = TokenType.NewLine,
+                            Position = position
+                        };
+                        break;
+                    case ';':
+                        SkipLine(ref content, ref pos);
+                        lineNumber++;
+                        lineStart = pos;
+                        yield return new Token {
+                            Type = TokenType.NewLine,
+                            Position = position
+                        };
+                        break;
+                    default:
+                        pos--;
+                        yield return new Token {
+                            StringValue = ReadCharacterString(ref content, ref pos),
+                            Position = position,
+                            Type = TokenType.Literal
+                        };
+                        break;
+                }
+            }
+
+            if (parentheses != 0) throw new TokenException("closing parentheses expected", new Token {
+                Position = new TokenPosition {
+                    File = source,
+                    Line = lineNumber,
+                    LineStart = lineStart
+                }
+            });
+        }
+    }
+}
