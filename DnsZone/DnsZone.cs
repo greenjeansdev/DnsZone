@@ -11,7 +11,7 @@ using DnsZone.Tokens;
 namespace DnsZone {
     public class DnsZone {
 
-        private static ResourceRecordReader _reader = new ResourceRecordReader();
+        private static readonly ResourceRecordReader _reader = new ResourceRecordReader();
 
         public IList<DnzZoneInclude> Includes { get; } = new List<DnzZoneInclude>();
 
@@ -34,6 +34,7 @@ namespace DnsZone {
                     case TokenType.Control:
                         ProcessControlDirective(context);
                         break;
+                    case TokenType.Whitespace:
                     case TokenType.Literal:
                         ParseResourceRecord(context);
                         break;
@@ -79,7 +80,8 @@ namespace DnsZone {
             string @class;
             TimeSpan? ttl;
 
-            var name = context.Tokens.Peek().Type == TokenType.Whitespace ? null : context.ReadDomainName();
+            var nameToken = context.Tokens.Dequeue();
+            var name = nameToken.Type != TokenType.Whitespace ? nameToken.StringValue : "";
 
             if (context.TryParseClass(out @class)) {
                 context.TryParseTtl(out ttl);

@@ -13,5 +13,7 @@
 
         TResult Visit(SoaResourceRecord record, TArg arg);
 
+        TResult Visit(TxtResourceRecord record, TArg arg);
+
     }
 }

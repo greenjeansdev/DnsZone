@@ -1,5 +1,7 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using DnsZone.Records;
+using DnsZone.Tokens;
 using NUnit.Framework;
 
 namespace DnsZone.Tests {
@@ -8,7 +10,7 @@ namespace DnsZone.Tests {
 
         [Test]
         public void ParseTest() {
-            var str = @"
+            const string str = @"
 $ORIGIN example.com.     ; designates the start of this zone file in the namespace
 $TTL 1h                  ; default expiration time of all resource records without their own TTL value
 example.com.  IN  SOA   ns.example.com. username.example.com. ( 2007120710 1d 2h 4w 1h )
@@ -26,12 +28,36 @@ wwwtest       IN  CNAME www                   ; wwwtest.example.com is another a
 mail          IN  A     192.0.2.3             ; IPv4 address for mail.example.com
 mail2         IN  A     192.0.2.4             ; IPv4 address for mail2.example.com
 mail3         IN  A     192.0.2.5             ; IPv4 address for mail3.example.com";
+            try {
+                var zone = DnsZone.Parse(str);
+                Assert.AreEqual(1, zone.Records.OfType<SoaResourceRecord>().Count());
+                Assert.AreEqual(2, zone.Records.OfType<NsResourceRecord>().Count());
+                Assert.AreEqual(3, zone.Records.OfType<MxResourceRecord>().Count());
+                Assert.AreEqual(5, zone.Records.OfType<AResourceRecord>().Count());
+                Assert.AreEqual(2, zone.Records.OfType<CNameResourceRecord>().Count());
+            } catch (TokenException exc) {
+                Console.WriteLine(exc.Token.Position.GetLine());
+                throw;
+            }
+        }
+
+        [Test]
+        public void TxtRecordParse() {
+            const string str = @"
+; multiple quotes strings on a single line
+; generates a single text string of 
+; Located in a black hole somewhere
+$TTL 1h                  ; default expiration time of all resource records without their own TTL value
+joe        IN      TXT    ""Located in a black hole"" "" somewhere""
+; multiple quoted strings on multiple lines
+joe IN      TXT (""Located in a black hole""
+                    "" somewhere over the rainbow"")
+; generates a single text string of
+; Located in a black hole somewhere over the rainbow";
             var zone = DnsZone.Parse(str);
-            Assert.AreEqual(1, zone.Records.OfType<SoaResourceRecord>().Count());
-            Assert.AreEqual(2, zone.Records.OfType<NsResourceRecord>().Count());
-            Assert.AreEqual(3, zone.Records.OfType<MxResourceRecord>().Count());
-            Assert.AreEqual(5, zone.Records.OfType<AResourceRecord>().Count());
-            Assert.AreEqual(2, zone.Records.OfType<CNameResourceRecord>().Count());
+            Assert.AreEqual(2, zone.Records.Count);
+
+            Assert.IsAssignableFrom<TxtResourceRecord>(zone.Records.First());
         }
     }
 }

@@ -4,7 +4,7 @@ using System.Net;
 using DnsZone.Records;
 using DnsZone.Tokens;
 
-namespace DnsZone {
+namespace DnsZone.Parser {
     public class DnsZoneParseContext {
 
         public string Origin { get; set; }

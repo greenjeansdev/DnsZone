@@ -44,7 +44,7 @@ namespace DnsZone {
                 //case ResourceRecordType.PTR: return ResourceRecordType.PTR;
                 //case ResourceRecordType.HINFO: return ResourceRecordType.HINFO;
                 case ResourceRecordType.MX: return new MxResourceRecord();
-                //case ResourceRecordType.TXT: return ResourceRecordType.TXT;
+                case ResourceRecordType.TXT: return new TxtResourceRecord();
                 default:
                     throw new NotSupportedException($"unsupported resource record type {type}");
             }

@@ -98,19 +98,11 @@ namespace DnsZone.Tokens {
                 if (pos >= content.Length) break;
                 var position = new TokenPosition { File = source, Line = lineNumber, LineStart = lineStart };
 
-                var ch = content[pos++];
+                var ch = content[pos];
 
-                if (char.IsWhiteSpace(ch) && pos == lineStart) {
-                    yield return new Token {
-                        Type = TokenType.Whitespace,
-                        Position = position,
-                        StringValue = ""
-                    };
-                    SkipWhitespace(ref content, ref pos);
-                    continue;
-                }
                 switch (ch) {
                     case '$':
+                        pos++;
                         yield return new Token {
                             Type = TokenType.Control,
                             Position = position,
@@ -118,18 +110,20 @@ namespace DnsZone.Tokens {
                         };
                         break;
                     case '"':
-                        pos--;
                         yield return new Token {
                             Type = TokenType.QuotedString,
                             StringValue = ReadString(ref content, ref pos, ref position),
                             Position = position
                         };
+                        SkipWhitespace(ref content, ref pos);
                         break;
                     case '(':
+                        pos++;
                         parentheses++;
                         SkipWhitespace(ref content, ref pos);
                         break;
                     case ')':
+                        pos++;
                         if (parentheses <= 0) throw new TokenException("unexpected closing parentheses", new Token {
                             Position = position
                         });
@@ -138,13 +132,16 @@ namespace DnsZone.Tokens {
                         break;
                     case '\r':
                     case '\n':
+                        pos++;
                         SkipNewLineChar(ref content, ref pos, ch);
                         lineNumber++;
                         lineStart = pos;
-                        yield return new Token {
-                            Type = TokenType.NewLine,
-                            Position = position
-                        };
+                        if (parentheses == 0) {
+                            yield return new Token {
+                                Type = TokenType.NewLine,
+                                Position = position
+                            };
+                        }
                         break;
                     case ';':
                         SkipLine(ref content, ref pos);
@@ -156,12 +153,22 @@ namespace DnsZone.Tokens {
                         };
                         break;
                     default:
-                        pos--;
-                        yield return new Token {
-                            StringValue = ReadCharacterString(ref content, ref pos),
-                            Position = position,
-                            Type = TokenType.Literal
-                        };
+                        if (char.IsWhiteSpace(ch)) {
+                            if (pos == lineStart && parentheses == 0) {
+                                yield return new Token {
+                                    Type = TokenType.Whitespace,
+                                    Position = position,
+                                    StringValue = ""
+                                };
+                            }
+                            SkipWhitespace(ref content, ref pos);
+                        } else {
+                            yield return new Token {
+                                StringValue = ReadCharacterString(ref content, ref pos),
+                                Position = position,
+                                Type = TokenType.Literal
+                            };
+                        }
                         break;
                 }
             }
