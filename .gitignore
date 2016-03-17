@@ -1,0 +1,16 @@
+/DnsZone/bin/
+/DnsZone/obj/
+/DnsZone/DnsZone.csproj.user
+
+/DnsZone.Tests/bin/
+/DnsZone.Tests/obj/
+/DnsZone.Tests/DnsZone.Tests.csproj.user
+
+/_ReSharper.Caches/
+/.vs/
+/packages/*
+
+
+
+/build/output/
+/build/package/
