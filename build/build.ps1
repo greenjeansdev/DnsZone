@@ -6,7 +6,7 @@ $packageDir = "$buildDir\package"
 
 $buildNuGet = $true;
 $nugetPackageId = "DnsZone";
-$nugetVersion = "1.0.3";
+$nugetVersion = "1.0.0";
 $nugetSourcePath = "$buildDir\dnszone.nuspec"
 $nuget = "$buildDir\nuget\nuget.exe"
 $nugetOutput = "$buildDir\output"
