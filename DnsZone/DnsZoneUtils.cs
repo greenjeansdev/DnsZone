@@ -143,7 +143,7 @@ namespace DnsZone {
                     part = (part ?? 0) * 10 + (ch - '0');
                 } else {
                     if (part == null) return false;
-                    switch (char.ToUpper(ch)) {
+                    switch (char.ToLower(ch)) {
                         case 'w':
                             timestamp += TimeSpan.FromDays(part.Value * 7);
                             break;
