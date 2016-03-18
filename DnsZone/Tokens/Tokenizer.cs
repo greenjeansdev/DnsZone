@@ -19,21 +19,6 @@ namespace DnsZone.Tokens {
             }
         }
 
-        private static void SkipLine(ref string content, ref int pos) {
-            while (pos < content.Length) {
-                var ch = content[pos++];
-                if (ch == 0x0d) {
-                    SkipOne(ref content, ref pos, (char)0x0a);
-                    return;
-                }
-                if (ch == 0x0a) {
-                    SkipOne(ref content, ref pos, (char)0x0d);
-                    return;
-                }
-            }
-        }
-
-
         private static void SkipComment(ref string content, ref int pos) {
             while (pos < content.Length) {
                 var ch = content[pos];
@@ -49,7 +34,7 @@ namespace DnsZone.Tokens {
         }
 
         private static char ReadCharCode(ref string content, ref int pos, ref TokenPosition position) {
-            int code = 0;
+            var code = 0;
             for (var i = 0; i < 3; i++) {
                 if (pos >= content.Length) throw new TokenException("unexpected end of escape sequence", new Token { Position = position });
                 var ch = content[pos++];

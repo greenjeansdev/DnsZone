@@ -41,6 +41,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DnsZone.cs" />
+    <Compile Include="Formatter\DnsZoneFormatterContext.cs" />
+    <Compile Include="Formatter\ResourceRecordWriter.cs" />
     <Compile Include="Parser\DnsZoneParseContext.cs" />
     <Compile Include="DnsZoneUtils.cs" />
     <Compile Include="Parser\ResourceRecordReader.cs" />

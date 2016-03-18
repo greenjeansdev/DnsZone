@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using DnsZone.Records;
 
 namespace DnsZone {
@@ -145,6 +146,40 @@ namespace DnsZone {
             return true;
         }
 
+        public static string FormatTimeSpan(TimeSpan val) {
+            var sb = new StringBuilder();
+
+            var weeks = Math.Floor(val.TotalDays / 7);
+            if (weeks > 0) {
+                sb.Append($"{weeks}w");
+                val = val.Subtract(TimeSpan.FromDays(7 * weeks));
+            }
+
+            var days = Math.Floor(val.TotalDays);
+            if (days > 0) {
+                sb.Append($"{days}d");
+                val = val.Subtract(TimeSpan.FromDays(days));
+            }
+
+            var hours = Math.Floor(val.TotalHours);
+            if (hours > 0) {
+                sb.Append($"{hours}h");
+                val = val.Subtract(TimeSpan.FromHours(hours));
+            }
+
+            var minutes = Math.Floor(val.TotalMinutes);
+            if (minutes > 0) {
+                sb.Append($"{minutes}m");
+                val = val.Subtract(TimeSpan.FromMinutes(minutes));
+            }
+
+            var seconds = Math.Floor(val.TotalSeconds);
+            if (seconds > 0) {
+                sb.Append(sb.Length > 0 ? $"{seconds}s" : $"{seconds}");
+            }
+
+            return sb.ToString();
+        }
 
     }
 

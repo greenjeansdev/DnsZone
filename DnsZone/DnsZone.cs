@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading.Tasks;
+using DnsZone.Formatter;
 using DnsZone.Parser;
 using DnsZone.Records;
 using DnsZone.Tokens;
@@ -16,6 +18,24 @@ namespace DnsZone {
         public IList<DnzZoneInclude> Includes { get; } = new List<DnzZoneInclude>();
 
         public IList<ResourceRecord> Records { get; } = new List<ResourceRecord>();
+
+        public override string ToString() {
+            var sb = new StringBuilder();
+            var context = new DnsZoneFormatterContext(this, sb);
+            var writer = new ResourceRecordWriter();
+            foreach (var recordGroup in Records.GroupBy(item => item.Type)) {
+                context.Sb.AppendLine($";{recordGroup.Key} records");
+                foreach (var record in recordGroup) {
+                    context.WriteAndCompressDomainName(record.Name);
+                    context.WriteClass(record.Class);
+                    context.WriteTimeSpan(record.Ttl);
+                    record.AcceptVistor(writer, context);
+                    context.Sb.AppendLine();
+                }
+                context.Sb.AppendLine();
+            }
+            return sb.ToString();
+        }
 
         public static DnsZone Parse(string content) {
             var zone = new DnsZone();
