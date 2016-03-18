@@ -7,7 +7,7 @@ using NUnit.Framework;
 
 namespace DnsZone.Tests {
     [TestFixture]
-    public class DnsZoneTests {
+    public class DnsZoneFileTests {
 
         [Test]
         public void ParseTest() {
@@ -30,7 +30,7 @@ mail          IN  A     192.0.2.3             ; IPv4 address for mail.example.co
 mail2         IN  A     192.0.2.4             ; IPv4 address for mail2.example.com
 mail3         IN  A     192.0.2.5             ; IPv4 address for mail3.example.com";
             try {
-                var zone = DnsZone.Parse(str);
+                var zone = DnsZoneFile.Parse(str);
                 Assert.AreEqual(1, zone.Records.OfType<SoaResourceRecord>().Count());
                 Assert.AreEqual(2, zone.Records.OfType<NsResourceRecord>().Count());
                 Assert.AreEqual(3, zone.Records.OfType<MxResourceRecord>().Count());
@@ -56,7 +56,7 @@ joe IN      TXT (""Located in a black hole""
                     "" somewhere over the rainbow"")
 ; generates a single text string of
 ; Located in a black hole somewhere over the rainbow";
-            var zone = DnsZone.Parse(str);
+            var zone = DnsZoneFile.Parse(str);
             Assert.AreEqual(2, zone.Records.Count);
 
             Assert.IsAssignableFrom<TxtResourceRecord>(zone.Records.First());
@@ -79,7 +79,7 @@ example.com.    IN    SOA   ns.example.com. hostmaster.example.com. (
                               1209600    ; ex = expiry = 2w
                               3600       ; nx = nxdomain ttl = 1h
                               )";
-            var zone = DnsZone.Parse(str);
+            var zone = DnsZoneFile.Parse(str);
             Assert.AreEqual(1, zone.Records.Count);
 
             Assert.IsAssignableFrom<SoaResourceRecord>(zone.Records.First());
@@ -113,7 +113,7 @@ mail       IN      AAAA      2001:db8::7  ; mail = round robin
 mail       IN      AAAA      2001:db8::32
 mail       IN      AAAA      2001:db8::33
 squat      IN      AAAA      2001:db8:0:0:1::13  ; address in another subnet";
-            var zone = DnsZone.Parse(str);
+            var zone = DnsZoneFile.Parse(str);
             Assert.AreEqual(10, zone.Records.Count);
 
             Assert.IsAssignableFrom<AaaaResourceRecord>(zone.Records.First());
@@ -133,7 +133,7 @@ $TTL 2d ; zone default = 2 days or 172800 seconds
 $ORIGIN example.com.
 www        IN      CNAME  server1
 ftp        IN      CNAME  server1";
-            var zone = DnsZone.Parse(str);
+            var zone = DnsZoneFile.Parse(str);
             Assert.AreEqual(2, zone.Records.Count);
 
             Assert.IsAssignableFrom<CNameResourceRecord>(zone.Records.First());
@@ -156,7 +156,7 @@ $TTL 2d ; zone default = 2 days or 172800 seconds
 $ORIGIN example.com.
 @               IN     MX     10  mail.foo.com.
 @               IN     MX     20  mail2.foo.com.";
-            var zone = DnsZone.Parse(str);
+            var zone = DnsZoneFile.Parse(str);
             Assert.AreEqual(2, zone.Records.Count);
 
             Assert.IsAssignableFrom<MxResourceRecord>(zone.Records.First());
@@ -180,7 +180,7 @@ $TTL 2d ; zone default = 2 days or 172800 seconds
 $ORIGIN example.com.
 @               IN      NS     ns1.example.net.
 @               IN      NS     ns1.example.org.";
-            var zone = DnsZone.Parse(str);
+            var zone = DnsZoneFile.Parse(str);
             Assert.AreEqual(2, zone.Records.Count);
 
             Assert.IsAssignableFrom<NsResourceRecord>(zone.Records.First());
@@ -201,7 +201,7 @@ $ORIGIN 23.168.192.IN-ADDR.ARPA.
 15            IN      PTR     www.example.com.
 17            IN      PTR     bill.example.com.
 74            IN      PTR     fred.example.com.";
-            var zone = DnsZone.Parse(str);
+            var zone = DnsZoneFile.Parse(str);
             Assert.AreEqual(4, zone.Records.Count);
 
             Assert.IsAssignableFrom<PtrResourceRecord>(zone.Records.First());
@@ -222,7 +222,7 @@ $TTL 2d ; 172800 secs
 alice  IN  A   192.168.2.1 ; real host name
 ns1    IN   A  192.168.2.1 ; service name
 alice  IN   A  192.168.2.1 ; host name (same IPv4)";
-            var zone = DnsZone.Parse(str);
+            var zone = DnsZoneFile.Parse(str);
             Assert.AreEqual(3, zone.Records.Count);
 
             Assert.IsAssignableFrom<AResourceRecord>(zone.Records.First());
@@ -250,7 +250,7 @@ _foobar._tcp    SRV 0 1 9 old-slow-box.example.com.
                 SRV 1 0 9 server.example.com.
 *._tcp          SRV  0 0 0 .
 *._udp          SRV  0 0 0 .";
-            var zone = DnsZone.Parse(str);
+            var zone = DnsZoneFile.Parse(str);
             Assert.AreEqual(6, zone.Records.Count);
 
             Assert.IsAssignableFrom<SrvResourceRecord>(zone.Records.First());

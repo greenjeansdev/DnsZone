@@ -17,11 +17,11 @@ namespace DnsZone.Formatter {
         public string PrevClass { get; set; }
 
 
-        public DnsZone Zone { get; }
+        public DnsZoneFile Zone { get; }
 
         public StringBuilder Sb { get; }
 
-        public DnsZoneFormatterContext(DnsZone zone, StringBuilder sb) {
+        public DnsZoneFormatterContext(DnsZoneFile zone, StringBuilder sb) {
             Sb = sb;
             Zone = zone;
         }

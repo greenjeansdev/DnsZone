@@ -11,7 +11,7 @@ using DnsZone.Records;
 using DnsZone.Tokens;
 
 namespace DnsZone {
-    public class DnsZone {
+    public class DnsZoneFile {
 
         private static readonly ResourceRecordReader _reader = new ResourceRecordReader();
 
@@ -37,8 +37,8 @@ namespace DnsZone {
             return sb.ToString();
         }
 
-        public static DnsZone Parse(string content) {
-            var zone = new DnsZone();
+        public static DnsZoneFile Parse(string content) {
+            var zone = new DnsZoneFile();
             var tokenizer = new Tokenizer();
             var source = new FileSource {
                 Content = content
@@ -128,7 +128,7 @@ namespace DnsZone {
 
         }
 
-        public static async Task<DnsZone> LoadAsync(string uri) {
+        public static async Task<DnsZoneFile> LoadAsync(string uri) {
             var request = WebRequest.Create(uri);
             using (var response = await request.GetResponseAsync()) {
                 var stream = response.GetResponseStream();

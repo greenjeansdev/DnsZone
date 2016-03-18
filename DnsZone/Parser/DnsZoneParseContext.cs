@@ -17,13 +17,13 @@ namespace DnsZone.Parser {
         public string PrevClass { get; set; }
 
 
-        public DnsZone Zone { get; }
+        public DnsZoneFile Zone { get; }
 
         public Queue<Token> Tokens { get; }
 
         public bool IsEof => Tokens.Count == 0;
 
-        public DnsZoneParseContext(DnsZone zone, IEnumerable<Token> tokens) {
+        public DnsZoneParseContext(DnsZoneFile zone, IEnumerable<Token> tokens) {
             Zone = zone;
             Tokens = new Queue<Token>(tokens);
         }
