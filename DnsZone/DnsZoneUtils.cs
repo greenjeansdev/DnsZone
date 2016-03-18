@@ -19,6 +19,7 @@ namespace DnsZone {
                 case "NULL": return ResourceRecordType.NULL;
                 case "WKS": return ResourceRecordType.WKS;
                 case "PTR": return ResourceRecordType.PTR;
+                case "SRV": return ResourceRecordType.SRV;
                 case "HINFO": return ResourceRecordType.HINFO;
                 case "MX": return ResourceRecordType.MX;
                 case "TXT": return ResourceRecordType.TXT;
@@ -30,7 +31,7 @@ namespace DnsZone {
         public static ResourceRecord CreateRecord(ResourceRecordType type) {
             switch (type) {
                 case ResourceRecordType.A: return new AResourceRecord();
-                case ResourceRecordType.AAAA: return new AAAAResourceRecord();
+                case ResourceRecordType.AAAA: return new AaaaResourceRecord();
                 case ResourceRecordType.NS: return new NsResourceRecord();
                 //case ResourceRecordType.MD: return ResourceRecordType.MD;
                 //case ResourceRecordType.MF: return ResourceRecordType.MF;
@@ -41,13 +42,35 @@ namespace DnsZone {
                 //case ResourceRecordType.MR: return ResourceRecordType.MR;
                 //case ResourceRecordType.NULL: return ResourceRecordType.NULL;
                 //case ResourceRecordType.WKS: return ResourceRecordType.WKS;
-                //case ResourceRecordType.PTR: return ResourceRecordType.PTR;
+                case ResourceRecordType.PTR: return new PtrResourceRecord();
+                case ResourceRecordType.SRV: return new SrvResourceRecord();
                 //case ResourceRecordType.HINFO: return ResourceRecordType.HINFO;
                 case ResourceRecordType.MX: return new MxResourceRecord();
                 case ResourceRecordType.TXT: return new TxtResourceRecord();
                 default:
                     throw new NotSupportedException($"unsupported resource record type {type}");
             }
+        }
+
+        public static bool TryParseClass(string val, out string @class) {
+            @class = null;
+            switch (val.ToUpperInvariant()) {
+                case "IN":
+                    @class = "IN";
+                    break;
+                case "CS":
+                    @class = "CS";
+                    break;
+                case "CH":
+                    @class = "CH";
+                    break;
+                case "HS":
+                    @class = "HS";
+                    break;
+                default:
+                    return false;
+            }
+            return true;
         }
 
         public static TimeSpan ParseTimeSpan(string val) {

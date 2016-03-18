@@ -13,6 +13,7 @@
         NULL,
         WKS,
         PTR,
+        SRV,
         HINFO,
         MX,
         TXT

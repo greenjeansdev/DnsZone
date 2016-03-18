@@ -33,6 +33,17 @@ namespace DnsZone.Tokens {
             }
         }
 
+
+        private static void SkipComment(ref string content, ref int pos) {
+            while (pos < content.Length) {
+                var ch = content[pos];
+                if (ch == 0x0d || ch == 0x0a) {
+                    return;
+                }
+                pos++;
+            }
+        }
+
         private static void SkipNewLineChar(ref string content, ref int pos, char firstChar) {
             SkipOne(ref content, ref pos, firstChar == '\n' ? '\r' : '\n');
         }
@@ -144,13 +155,7 @@ namespace DnsZone.Tokens {
                         }
                         break;
                     case ';':
-                        SkipLine(ref content, ref pos);
-                        lineNumber++;
-                        lineStart = pos;
-                        yield return new Token {
-                            Type = TokenType.NewLine,
-                            Position = position
-                        };
+                        SkipComment(ref content, ref pos);
                         break;
                     default:
                         if (char.IsWhiteSpace(ch)) {

@@ -1,9 +1,9 @@
 ﻿namespace DnsZone.Records {
-    public class CNameResourceRecord : ResourceRecord {
+    public class PtrResourceRecord : ResourceRecord {
 
-        public string CanonicalName { get; set; }
+        public string HostName { get; set; }
 
-        public override ResourceRecordType Type => ResourceRecordType.CNAME;
+        public override ResourceRecordType Type => ResourceRecordType.PTR;
 
         public override TResult AcceptVistor<TArg, TResult>(IResourceRecordVisitor<TArg, TResult> visitor, TArg arg) {
             return visitor.Visit(this, arg);

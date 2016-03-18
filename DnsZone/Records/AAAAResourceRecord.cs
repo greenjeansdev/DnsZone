@@ -1,7 +1,7 @@
 ﻿using System.Net;
 
 namespace DnsZone.Records {
-    public class AAAAResourceRecord : ResourceRecord {
+    public class AaaaResourceRecord : ResourceRecord {
 
         public IPAddress Address { get; set; }
 

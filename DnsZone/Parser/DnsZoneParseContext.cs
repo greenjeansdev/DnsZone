@@ -11,7 +11,11 @@ namespace DnsZone.Parser {
 
         public TimeSpan? DefaultTtl { get; set; }
 
-        public string DefaultClass { get; set; }
+
+        public string PrevName { get; set; }
+
+        public string PrevClass { get; set; }
+
 
         public DnsZone Zone { get; }
 
@@ -34,6 +38,10 @@ namespace DnsZone.Parser {
             var token = Tokens.Dequeue();
             if (token.Type != TokenType.Literal) throw new TokenException("domain name expected", token);
             return token.StringValue;
+        }
+
+        public string ReadAndResolveDomainName() {
+            return ResolveDomainName(ReadDomainName());
         }
 
         public string ReadEmail() {
@@ -65,23 +73,28 @@ namespace DnsZone.Parser {
             return DnsZoneUtils.ParseResourceRecordType(token.StringValue);
         }
 
+        public string ResolveDomainName(string val) {
+            if (val == "@") {
+                if (string.IsNullOrWhiteSpace(Origin)) {
+                    throw new ArgumentException("couldn't resolve @ domain");
+                }
+                return Origin;
+            }
+            if (!val.EndsWith(".")) {
+                if (string.IsNullOrWhiteSpace(Origin)) {
+                    throw new Exception("couldn't resolve relative domain name");
+                }
+                val = val + "." + Origin;
+            } else {
+                val = val.TrimEnd('.');
+            }
+            return val;
+        }
 
         public TimeSpan GetTimeSpan(TimeSpan? explicitValue) {
             if (explicitValue.HasValue) return explicitValue.Value;
             if (DefaultTtl.HasValue) return DefaultTtl.Value;
             throw new Exception("unknown ttl value");
-        }
-
-        public string GetClass(string explicitValue) {
-            if (explicitValue != null) return explicitValue;
-            if (DefaultClass != null) return DefaultClass;
-            throw new Exception("unknown class value");
-        }
-
-        public string GetDomainName(string explicitValue) {
-            if (explicitValue != null) return explicitValue;
-            if (Origin != null) return Origin;
-            throw new Exception("unknown domain name value");
         }
 
         public bool TryParseTtl(out TimeSpan val) {
@@ -111,8 +124,7 @@ namespace DnsZone.Parser {
             @class = null;
             var token = Tokens.Peek();
             if (token.Type != TokenType.Literal) return false;
-            if (token.StringValue.ToUpperInvariant() == "IN") {
-                @class = "IN";
+            if (DnsZoneUtils.TryParseClass(token.StringValue, out @class)) {
                 Tokens.Dequeue();
                 return true;
             }
@@ -123,7 +135,7 @@ namespace DnsZone.Parser {
             while (!IsEof) {
                 var token = Tokens.Peek();
                 switch (token.Type) {
-                    case TokenType.Whitespace: 
+                    case TokenType.Whitespace:
                     case TokenType.Comments:
                         Tokens.Dequeue();
                         break;

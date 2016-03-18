@@ -50,7 +50,7 @@ namespace DnsZone {
             var directive = token.StringValue;
             switch (directive.ToUpperInvariant()) {
                 case "ORIGIN":
-                    context.Origin = context.Tokens.Dequeue().StringValue;
+                    context.Origin = context.ReadAndResolveDomainName();
                     break;
                 case "INCLUDE":
                     var firstToken = context.Tokens.Dequeue();
@@ -92,15 +92,20 @@ namespace DnsZone {
             var type = context.ReadResourceRecordType();
 
             var record = DnsZoneUtils.CreateRecord(type);
-            record.Name = context.GetDomainName(name);
-            record.Class = context.GetClass(@class);
+            record.Name = context.ResolveDomainName(!string.IsNullOrWhiteSpace(name) ? name : context.PrevName);
+            record.Class = !string.IsNullOrWhiteSpace(@class) ? @class : context.PrevClass;
             record.Ttl = context.GetTimeSpan(ttl);
 
             record.AcceptVistor(_reader, context);
 
             context.Zone.Records.Add(record);
 
-            context.DefaultClass = record.Class;
+            context.PrevName = name;
+
+            if (!string.IsNullOrWhiteSpace(@class)) {
+                context.PrevClass = @class;
+            }
+
         }
 
         public static async Task<DnsZone> LoadAsync(string uri) {
