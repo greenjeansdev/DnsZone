@@ -20,8 +20,17 @@ namespace DnsZone {
         public IList<ResourceRecord> Records { get; } = new List<ResourceRecord>();
 
         public override string ToString() {
+            return ToString(null);
+        }
+
+        public string ToString(string origin) {
             var sb = new StringBuilder();
-            var context = new DnsZoneFormatterContext(this, sb);
+            var context = new DnsZoneFormatterContext(this, sb) {
+                Origin = origin
+            };
+            if (!string.IsNullOrWhiteSpace(origin)) {
+                context.WriteOrigin(origin);
+            }
             var writer = new ResourceRecordWriter();
             foreach (var recordGroup in Records.GroupBy(item => item.Type)) {
                 context.Sb.AppendLine($";{recordGroup.Key} records");
@@ -29,6 +38,7 @@ namespace DnsZone {
                     context.WriteAndCompressDomainName(record.Name);
                     context.WriteClass(record.Class);
                     context.WriteTimeSpan(record.Ttl);
+                    context.WriteResourceRecordType(record.Type);
                     record.AcceptVistor(writer, context);
                     context.Sb.AppendLine();
                 }

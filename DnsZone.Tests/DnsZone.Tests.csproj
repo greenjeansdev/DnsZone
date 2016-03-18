@@ -48,6 +48,7 @@
     <Compile Include="DnsZoneFileTests.cs" />
     <Compile Include="DnsZoneUtilsTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Records\SrvResourceRecordTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

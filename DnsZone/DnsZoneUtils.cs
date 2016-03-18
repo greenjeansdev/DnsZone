@@ -29,6 +29,31 @@ namespace DnsZone {
             }
         }
 
+        public static string FormatResourceRecordType(ResourceRecordType val) {
+            switch (val) {
+                case ResourceRecordType.A: return "A";
+                case ResourceRecordType.AAAA: return "AAAA";
+                case ResourceRecordType.NS: return "NS";
+                case ResourceRecordType.MD: return "MD";
+                case ResourceRecordType.MF: return "MF";
+                case ResourceRecordType.CNAME: return "CNAME";
+                case ResourceRecordType.SOA: return "SOA";
+                case ResourceRecordType.MB: return "MB";
+                case ResourceRecordType.MG: return "MG";
+                case ResourceRecordType.MR: return "MR";
+                case ResourceRecordType.NULL: return "NULL";
+                case ResourceRecordType.WKS: return "WKS";
+                case ResourceRecordType.PTR: return "PTR";
+                case ResourceRecordType.SRV: return "SRV";
+                case ResourceRecordType.HINFO: return "HINFO";
+                case ResourceRecordType.MX: return "MX";
+                case ResourceRecordType.TXT: return "TXT";
+                default:
+                    throw new NotSupportedException($"unsupported resource record type {val}");
+            }
+        }
+
+
         public static ResourceRecord CreateRecord(ResourceRecordType type) {
             switch (type) {
                 case ResourceRecordType.A: return new AResourceRecord();

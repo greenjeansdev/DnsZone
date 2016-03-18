@@ -3,7 +3,7 @@
 namespace DnsZone.Records {
     public abstract class ResourceRecord {
 
-        public string Name { get; set; }
+        public virtual string Name { get; set; }
 
         public string Class { get; set; }
 
