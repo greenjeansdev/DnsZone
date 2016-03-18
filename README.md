@@ -2,6 +2,8 @@
 
 DnsZone is a tool for parsing and building dns zone file.
 
+Available at [nuget.org](https://www.nuget.org/packages/DnsZone/)
+
 # Parsing zone file
 
 Parse dns zone from existing string:
@@ -36,6 +38,8 @@ var zone = await DnsZoneFile.LoadAsync(uri)
 
 # Generating zone file
 
+You can use regular `ToString()` method to produce zone file from `DnsZoneFile` object
+
 ```C#
 var zone = new DnsZoneFile();
 zone.Records.Add(new AResourceRecord {
@@ -53,7 +57,7 @@ zone.Records.Add(new AResourceRecord {
 Console.Write(zone.ToString());
 ```
 
-This will generate following content
+This will generate following content:
 
 ```
 ;A records
