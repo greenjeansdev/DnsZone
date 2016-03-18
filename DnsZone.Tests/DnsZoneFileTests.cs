@@ -262,5 +262,23 @@ _foobar._tcp    SRV 0 1 9 old-slow-box.example.com.
             Assert.AreEqual(ResourceRecordType.SRV, record.Type);
             Assert.AreEqual(0, record.Priority);
         }
+
+        [Test]
+        public void FormatTest() {
+            var zone = new DnsZoneFile();
+            zone.Records.Add(new AResourceRecord {
+                Name = "www.example.com",
+                Class = "IN",
+                Ttl = TimeSpan.FromMinutes(15),
+                Address = IPAddress.Parse("127.0.0.1")
+            });
+            zone.Records.Add(new AResourceRecord {
+                Name = "ftp.example.com",
+                Class = "IN",
+                Ttl = TimeSpan.FromMinutes(15),
+                Address = IPAddress.Parse("127.0.0.1")
+            });
+            Assert.IsNotNull(zone.ToString());
+        }
     }
 }
