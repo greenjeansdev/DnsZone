@@ -6,7 +6,7 @@ $packageDir = "$buildDir\package"
 
 $buildNuGet = $true;
 $nugetPackageId = "DnsZone";
-$nugetVersion = "1.0.1";
+$nugetVersion = "1.0.0";
 $nugetSourcePath = "$buildDir\dnszone.nuspec"
 $nuget = "$buildDir\nuget\nuget.exe"
 $nugetOutput = "$buildDir\output"
@@ -28,7 +28,15 @@ function Delete-Folder($path) {
 	}
 }
 
-function Update-NuSpec ($path) {
+function Parse-NuSpec($path) {
+    $xml = [xml](Get-Content $path)
+	$meta = $xml.package.metadata;
+	@{
+		Version = $meta.version;
+	}
+}
+
+function Update-NuSpec($path) {
     $xml = [xml](Get-Content $path)
 	$meta = $xml.package.metadata;
 	$meta.id = $nugetPackageId;
@@ -69,6 +77,11 @@ Write-Host "Copying bin files to package"
 Ensure-Folder $packageDir
 Ensure-Folder "$packageDir\lib"
 Copy-Build "$srcPath\DnsZone"
+
+Write-Host "parsing nuspec file" -ForegroundColor Green
+$nuspecInfo = Parse-NuSpec $nugetSourcePath
+Write-Host "version: $($nuspecInfo.Version)"
+$nugetVersion = $nuspecInfo.Version
 
 Write-Host "Updating nuspec file at $nugetSpec" -ForegroundColor Green
 Copy-Item -Path $nugetSourcePath -Destination $nugetSpec
