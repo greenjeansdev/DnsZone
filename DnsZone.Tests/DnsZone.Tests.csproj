@@ -52,6 +52,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <EmbeddedResource Include="Samples\root_com.zone" />
+    <EmbeddedResource Include="Samples\www_root_com.zone" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DnsZone\DnsZone.csproj">

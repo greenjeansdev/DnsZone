@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Net;
+using DnsZone.IO;
 using DnsZone.Records;
 using DnsZone.Tokens;
 using NUnit.Framework;
@@ -279,6 +280,71 @@ _foobar._tcp    SRV 0 1 9 old-slow-box.example.com.
                 Address = IPAddress.Parse("127.0.0.1")
             });
             Assert.IsNotNull(zone.ToString());
+        }
+
+        [Test]
+        public void FitlerTest() {
+            var zone = new DnsZoneFile();
+            zone.Records.Add(new AResourceRecord {
+                Name = "www.example.com",
+                Class = "IN",
+                Ttl = TimeSpan.FromMinutes(15),
+                Address = IPAddress.Parse("127.0.0.1")
+            });
+            zone.Records.Add(new AResourceRecord {
+                Name = "ftp.example.com",
+                Class = "IN",
+                Ttl = TimeSpan.FromMinutes(15),
+                Address = IPAddress.Parse("127.0.0.2")
+            });
+            zone.Records.Add(new AResourceRecord {
+                Name = "example.com",
+                Class = "IN",
+                Ttl = TimeSpan.FromMinutes(15),
+                Address = IPAddress.Parse("127.0.0.3")
+            });
+            zone.Records.Add(new AResourceRecord {
+                Name = "test-example.com",
+                Class = "IN",
+                Ttl = TimeSpan.FromMinutes(15),
+                Address = IPAddress.Parse("127.0.0.4")
+            });
+            zone.Records.Add(new AResourceRecord {
+                Name = "example-test-example.com",
+                Class = "IN",
+                Ttl = TimeSpan.FromMinutes(15),
+                Address = IPAddress.Parse("127.0.0.5")
+            });
+
+            var filtered = zone.Filter("example.com");
+            Assert.AreEqual(3, filtered.Records.Count);
+            Assert.IsTrue(filtered.Records.OfType<AResourceRecord>().Any(item => Equals(item.Address, IPAddress.Parse("127.0.0.1"))));
+            Assert.IsTrue(filtered.Records.OfType<AResourceRecord>().Any(item => Equals(item.Address, IPAddress.Parse("127.0.0.2"))));
+            Assert.IsTrue(filtered.Records.OfType<AResourceRecord>().Any(item => Equals(item.Address, IPAddress.Parse("127.0.0.3"))));
+
+
+            filtered = zone.Filter("test-example.com");
+            Assert.AreEqual(1, filtered.Records.Count);
+            Assert.IsTrue(filtered.Records.OfType<AResourceRecord>().Any(item => Equals(item.Address, IPAddress.Parse("127.0.0.4"))));
+
+            filtered = zone.Filter("example-test-example.com");
+            Assert.AreEqual(1, filtered.Records.Count);
+            Assert.IsTrue(filtered.Records.OfType<AResourceRecord>().Any(item => Equals(item.Address, IPAddress.Parse("127.0.0.5"))));
+        }
+
+        [Test]
+        public void IncludeTest() {
+            var embedded = new EmbeddedDnsSource(GetType().Assembly, GetType().Namespace + ".Samples", "root_com.zone");
+            var zone = DnsZoneFile.Parse(embedded);
+            Assert.AreEqual(2, zone.Records.Count);
+
+            var rootA = zone.Single<AResourceRecord>("root.com");
+            Assert.AreEqual(IPAddress.Parse("192.168.0.1"), rootA.Address);
+
+            var wwwA = zone.Single<AResourceRecord>("www.root.com");
+            Assert.AreEqual(IPAddress.Parse("192.168.0.2"), wwwA.Address);
+
+
         }
     }
 }

@@ -1,11 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
+using DnsZone.IO;
 using DnsZone.Records;
 using DnsZone.Tokens;
 
 namespace DnsZone.Parser {
     public class DnsZoneParseContext {
+
+        public IDnsSource Source { get; }
+
+        protected string FileName { get; set; }
+
 
         public string Origin { get; set; }
 
@@ -23,9 +30,23 @@ namespace DnsZone.Parser {
 
         public bool IsEof => Tokens.Count == 0;
 
-        public DnsZoneParseContext(DnsZoneFile zone, IEnumerable<Token> tokens) {
-            Zone = zone;
+        public DnsZoneParseContext(IEnumerable<Token> tokens, IDnsSource source) {
+            Source = source;
+            Zone = new DnsZoneFile();
             Tokens = new Queue<Token>(tokens);
+        }
+
+        public DnsZoneParseContext CreateChildContext(string fileName) {
+            var newFile = Source.ResolveFile(fileName, FileName);
+
+            var tokenizer = new Tokenizer();
+            var fileSource = new FileSource {
+                Content = Source.LoadContent(newFile)
+            };
+            var tokens = tokenizer.Read(fileSource).ToArray();
+            return new DnsZoneParseContext(tokens, Source) {
+                FileName = newFile
+            };
         }
 
         public ushort ReadPreference() {

@@ -6,6 +6,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using DnsZone.Formatter;
+using DnsZone.IO;
 using DnsZone.Parser;
 using DnsZone.Records;
 using DnsZone.Tokens;
@@ -15,9 +16,30 @@ namespace DnsZone {
 
         private static readonly ResourceRecordReader _reader = new ResourceRecordReader();
 
-        public IList<DnzZoneInclude> Includes { get; } = new List<DnzZoneInclude>();
-
         public IList<ResourceRecord> Records { get; } = new List<ResourceRecord>();
+
+        public DnsZoneFile Filter(string origin) {
+            var res = new DnsZoneFile();
+            origin = origin.ToLowerInvariant();
+            var subdomain = ("." + origin);
+            foreach (var record in Records) {
+                if (record.Name.ToLowerInvariant() == origin || record.Name.EndsWith(subdomain)) {
+                    res.Records.Add(record);
+                }
+            }
+            return res;
+        }
+
+        public DnsZoneFile Add(DnsZoneFile other) {
+            foreach (var record in other.Records) {
+                Records.Add(record);
+            }
+            return this;
+        }
+
+        public T Single<T>(string origin) where T : ResourceRecord {
+            return Records.OfType<T>().Single(item => string.Equals(item.Name, origin, StringComparison.InvariantCultureIgnoreCase));
+        }
 
         public override string ToString() {
             return ToString(null);
@@ -48,13 +70,21 @@ namespace DnsZone {
         }
 
         public static DnsZoneFile Parse(string content) {
-            var zone = new DnsZoneFile();
+            return Parse(new StringDnsSource(content));
+        }
+
+        public static DnsZoneFile Parse(IDnsSource source) {
             var tokenizer = new Tokenizer();
-            var source = new FileSource {
-                Content = content
+            var fileSource = new FileSource {
+                Content = source.LoadContent(null)
             };
-            var tokens = tokenizer.Read(source).ToArray();
-            var context = new DnsZoneParseContext(zone, tokens);
+            var tokens = tokenizer.Read(fileSource).ToArray();
+            var context = new DnsZoneParseContext(tokens, source);
+            Process(context);
+            return context.Zone;
+        }
+
+        private static void Process(DnsZoneParseContext context) {
             while (!context.IsEof) {
                 var token = context.Tokens.Peek();
                 switch (token.Type) {
@@ -72,7 +102,6 @@ namespace DnsZone {
                         throw new NotSupportedException($"not supported type {token.Type}");
                 }
             }
-            return zone;
         }
 
         private static void ProcessControlDirective(DnsZoneParseContext context) {
@@ -86,16 +115,10 @@ namespace DnsZone {
                     var firstToken = context.Tokens.Dequeue();
                     var secondToken = context.Tokens.Dequeue();
                     if (secondToken.Type == TokenType.NewLine) {
-                        context.Zone.Includes.Add(new DnzZoneInclude {
-                            Origin = context.Origin,
-                            FileName = firstToken.StringValue
-                        });
+                        ProcessIncludeDirective(context, context.Origin, firstToken.StringValue);
                     } else {
                         context.Tokens.Dequeue(); //end of line
-                        context.Zone.Includes.Add(new DnzZoneInclude {
-                            Origin = secondToken.StringValue,
-                            FileName = firstToken.StringValue
-                        });
+                        ProcessIncludeDirective(context, secondToken.StringValue, firstToken.StringValue);
                     }
                     break;
                 case "TTL":
@@ -104,6 +127,13 @@ namespace DnsZone {
                 default:
                     throw new NotSupportedException($"Unknown control directive '{directive}'");
             }
+        }
+
+        private static void ProcessIncludeDirective(DnsZoneParseContext context, string origin, string fileName) {
+            var childContext = context.CreateChildContext(fileName);
+            childContext.Origin = context.ResolveDomainName(origin);
+            Process(childContext);
+            context.Zone.Add(childContext.Zone);
         }
 
         private static void ParseResourceRecord(DnsZoneParseContext context) {
