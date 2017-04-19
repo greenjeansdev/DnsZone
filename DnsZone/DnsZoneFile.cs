@@ -69,17 +69,31 @@ namespace DnsZone {
             return sb.ToString();
         }
 
-        public static DnsZoneFile Parse(string content) {
-            return Parse(new StringDnsSource(content));
+        /// <summary>
+        /// Parses DNS zone file
+        /// </summary>
+        /// <param name="content">DNS zone file content</param>
+        /// <param name="origin">Explicit origin if needed</param>
+        /// <returns></returns>
+        public static DnsZoneFile Parse(string content, string origin = null) {
+            return Parse(new StringDnsSource(content), origin);
         }
 
-        public static DnsZoneFile Parse(IDnsSource source) {
+        /// <summary>
+        /// Parses DNS zone file
+        /// </summary>
+        /// <param name="source">DNS zone file source</param>
+        /// <param name="origin">Explicit origin if needed</param>
+        /// <returns></returns>
+        public static DnsZoneFile Parse(IDnsSource source, string origin = null) {
             var tokenizer = new Tokenizer();
             var fileSource = new FileSource {
                 Content = source.LoadContent(null)
             };
             var tokens = tokenizer.Read(fileSource).ToArray();
-            var context = new DnsZoneParseContext(tokens, source);
+            var context = new DnsZoneParseContext(tokens, source) {
+                Origin = origin
+            };
             Process(context);
             return context.Zone;
         }
@@ -151,8 +165,14 @@ namespace DnsZone {
 
             var type = context.ReadResourceRecordType();
 
+            string domainName;
+            try {
+                domainName = context.ResolveDomainName(!string.IsNullOrWhiteSpace(name) ? name : context.PrevName);
+            } catch(ArgumentException exc) {
+                throw new TokenException(exc.Message, nameToken);
+            }
             var record = DnsZoneUtils.CreateRecord(type);
-            record.Name = context.ResolveDomainName(!string.IsNullOrWhiteSpace(name) ? name : context.PrevName);
+            record.Name = domainName;
             record.Class = !string.IsNullOrWhiteSpace(@class) ? @class : context.PrevClass;
             record.Ttl = context.GetTimeSpan(ttl);
 

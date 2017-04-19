@@ -265,6 +265,35 @@ _foobar._tcp    SRV 0 1 9 old-slow-box.example.com.
         }
 
         [Test]
+        public void ExplicitOriginTest() {
+            const string str = @"
+; A Records
+@	600	IN	A	184.168.221.14
+sub	600	IN	A	184.168.221.15
+";
+            var zone = DnsZoneFile.Parse(str, "test.com");
+            Assert.AreEqual(2, zone.Records.Count);
+
+            Assert.IsAssignableFrom<AResourceRecord>(zone.Records.First());
+
+            var rootRecord = (AResourceRecord)zone.Records.First();
+            Assert.AreEqual("test.com", rootRecord.Name);
+            var subRecord = (AResourceRecord)zone.Records.Last();
+            Assert.AreEqual("sub.test.com", subRecord.Name);
+        }
+
+        [Test]
+        public void MissingOriginTest() {
+            const string str = @"
+; A Records
+@	600	IN	A	184.168.221.14
+sub	600	IN	A	184.168.221.15
+";
+            Assert.Throws<TokenException>(() => DnsZoneFile.Parse(str));
+        }
+
+
+        [Test]
         public void FormatTest() {
             var zone = new DnsZoneFile();
             zone.Records.Add(new AResourceRecord {
@@ -343,8 +372,6 @@ _foobar._tcp    SRV 0 1 9 old-slow-box.example.com.
 
             var wwwA = zone.Single<AResourceRecord>("www.root.com");
             Assert.AreEqual(IPAddress.Parse("192.168.0.2"), wwwA.Address);
-
-
         }
     }
 }
