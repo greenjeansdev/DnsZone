@@ -168,7 +168,7 @@ namespace DnsZone {
             string domainName;
             try {
                 domainName = context.ResolveDomainName(!string.IsNullOrWhiteSpace(name) ? name : context.PrevName);
-            } catch(ArgumentException exc) {
+            } catch (ArgumentException exc) {
                 throw new TokenException(exc.Message, nameToken);
             }
             var record = DnsZoneUtils.CreateRecord(type);
@@ -188,16 +188,26 @@ namespace DnsZone {
 
         }
 
-        public static async Task<DnsZoneFile> LoadAsync(string uri) {
+        public static async Task<DnsZoneFile> LoadFromUriAsync(string uri, string explicitOrigin = null) {
             var request = WebRequest.Create(uri);
             using (var response = await request.GetResponseAsync()) {
                 var stream = response.GetResponseStream();
                 if (stream == null) throw new Exception("Content not found");
                 using (stream) {
                     var content = await new StreamReader(stream).ReadToEndAsync();
-                    return Parse(content);
+                    return Parse(content, explicitOrigin);
                 }
             }
         }
+
+        public static async Task<DnsZoneFile> LoadFromFileAsync(string path, string explicitOrigin = null) {
+            using (var file = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)) {
+                using (var reader = new StreamReader(file)) {
+                    var content = await reader.ReadToEndAsync();
+                    return Parse(content, explicitOrigin);
+                }
+            }
+        }
+
     }
 }
