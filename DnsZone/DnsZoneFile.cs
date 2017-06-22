@@ -38,7 +38,7 @@ namespace DnsZone {
         }
 
         public T Single<T>(string origin) where T : ResourceRecord {
-            return Records.OfType<T>().Single(item => string.Equals(item.Name, origin, StringComparison.InvariantCultureIgnoreCase));
+            return Records.OfType<T>().Single(item => string.Equals(item.Name, origin, StringComparison.OrdinalIgnoreCase));
         }
 
         public override string ToString() {

@@ -1,15 +1,20 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
 using System.Net;
 using DnsZone.IO;
 using DnsZone.Records;
 using DnsZone.Tokens;
 using NUnit.Framework;
+using System.Threading.Tasks;
 
 namespace DnsZone.Tests {
     [TestFixture]
     public class DnsZoneFileTests {
+
+        [Test]
+        public async Task Parse2Test() {
+            var zone = await DnsZoneFile.LoadFromFileAsync(@"d:\codereign.net.txt", "codereign.net");
+        }
 
         [Test]
         public void ParseTest() {
