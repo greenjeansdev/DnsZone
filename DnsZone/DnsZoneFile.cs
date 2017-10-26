@@ -10,6 +10,7 @@ using DnsZone.IO;
 using DnsZone.Parser;
 using DnsZone.Records;
 using DnsZone.Tokens;
+using System.Net.Http;
 
 namespace DnsZone {
     public class DnsZoneFile {
@@ -189,14 +190,9 @@ namespace DnsZone {
         }
 
         public static async Task<DnsZoneFile> LoadFromUriAsync(string uri, string explicitOrigin = null) {
-            var request = WebRequest.Create(uri);
-            using (var response = await request.GetResponseAsync()) {
-                var stream = response.GetResponseStream();
-                if (stream == null) throw new Exception("Content not found");
-                using (stream) {
-                    var content = await new StreamReader(stream).ReadToEndAsync();
-                    return Parse(content, explicitOrigin);
-                }
+            using (var client = new HttpClient()) {
+                var content = await client.GetStringAsync(uri);
+                return Parse(content, explicitOrigin);
             }
         }
 

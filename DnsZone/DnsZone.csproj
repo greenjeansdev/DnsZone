@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net45;net461;netcoreapp1.1</TargetFrameworks>
+    <TargetFramework>netstandard1.3</TargetFramework>
     <Version>1.0.8</Version>
     <Authors>Sergey Savchuk</Authors>
     <Description>DnsZone is a tool for parsing and formating dnz zone files according to RFC1035 and RFC1034.</Description>
@@ -8,13 +8,4 @@
     <PackageTags>DNS, Zone, Bind</PackageTags>
     <NeutralLanguage>en-US</NeutralLanguage>
   </PropertyGroup>
-   <ItemGroup Condition="'$(TargetFramework)' == 'net461' Or '$(TargetFramework)' == 'net45'">
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="Microsoft.CSharp" />
-  </ItemGroup>
 </Project>

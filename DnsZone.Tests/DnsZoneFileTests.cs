@@ -13,7 +13,7 @@ namespace DnsZone.Tests {
 
         [Test]
         public async Task Parse2Test() {
-            var zone = await DnsZoneFile.LoadFromFileAsync(@"d:\codereign.net.txt", "codereign.net");
+            var zone = await DnsZoneFile.LoadFromFileAsync(@"Samples/domain.com.zone", "domain.com");
         }
 
         [Test]
