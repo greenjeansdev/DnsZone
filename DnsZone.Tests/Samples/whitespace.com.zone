@@ -9,13 +9,13 @@ $TTL 2h
 			2w		; expiry
 			2h		; minimum
 		)
-		NS	ns.c4.net.
-		NS	ns2.c4.net.
+		NS	ns.host.net.
+		NS	ns2.host.net.
 		MX	10	mail
-		IN	TXT	"v=spf1 +mx +include:c4.net ?all"
+		IN	TXT	"v=spf1 +mx +include:host.net ?all"
 		A	10.0.0.1
-webmail	IN	CNAME	webmail.c4.net.
-admin	IN	CNAME	webmail.c4.net.
+webmail	IN	CNAME	webmail.host.net.
+admin	IN	CNAME	webmail.host.net.
 stats	IN	CNAME	stats.host.net.
 mail	IN	A	10.0.0.1
 *	IN	A	10.0.0.1
