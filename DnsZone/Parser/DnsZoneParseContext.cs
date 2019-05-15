@@ -90,6 +90,7 @@ namespace DnsZone.Parser {
 
         public ResourceRecordType ReadResourceRecordType() {
             var token = Tokens.Dequeue();
+            if (token.Type == TokenType.Whitespace || token.Type == TokenType.NewLine) return ResourceRecordType.NULL;
             if (token.Type != TokenType.Literal) throw new TokenException("resource record type expected", token);
             return DnsZoneUtils.ParseResourceRecordType(token.StringValue);
         }

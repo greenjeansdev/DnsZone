@@ -165,6 +165,10 @@ namespace DnsZone {
             }
 
             var type = context.ReadResourceRecordType();
+            
+            //An RRT.NULL return  indicates we encountered some kind of 
+            //whitespace instead of the ReadResourceRecordType.
+            if (type == ResourceRecordType.NULL) return;
 
             string domainName;
             try {
