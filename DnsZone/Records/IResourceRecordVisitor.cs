@@ -19,5 +19,7 @@
 
         TResult Visit(TxtResourceRecord record, TArg arg);
 
+        TResult Visit(CAAResourceRecord record, TArg arg);
+
     }
 }

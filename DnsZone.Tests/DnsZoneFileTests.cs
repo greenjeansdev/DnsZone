@@ -12,6 +12,32 @@ namespace DnsZone.Tests {
     public class DnsZoneFileTests {
 
         [Test]
+        public async Task CAARecordParseTest()
+        {
+            const string str = @"
+; zone fragment example.com
+; mail servers in the same zone
+; will support incoming email with addresses of the format 
+; user@example.com
+$TTL 2d ; zone default = 2 days or 172800 seconds
+$ORIGIN example.com.
+example.com. IN	CAA 0	iodef		""mailto: hostmaster@example.com""
+    IN  CAA 0   issue       ""letsencrypt.org""";
+            var zone = DnsZoneFile.Parse(str);
+            Assert.AreEqual(2, zone.Records.Count);
+
+            Assert.IsAssignableFrom<CAAResourceRecord>(zone.Records.First());
+
+            var record = (CAAResourceRecord)zone.Records.First();
+            Assert.AreEqual("example.com", record.Name);
+            Assert.AreEqual("IN", record.Class);
+            Assert.AreEqual(ResourceRecordType.CAA, record.Type);
+            Assert.AreEqual(0, record.flag);
+            Assert.AreEqual("iodef", record.tag);
+            Assert.AreEqual("mailto: hostmaster@example.com", record.value);
+        }
+
+        [Test]
         public async Task Parse2Test() {
             var zone = await DnsZoneFile.LoadFromFileAsync(@"Samples/domain.com.zone", "domain.com");
         }
@@ -312,6 +338,22 @@ sub	600	IN	A	184.168.221.15
             Assert.AreEqual("test.com", rootRecord.Name);
             var subRecord = (AResourceRecord)zone.Records.Last();
             Assert.AreEqual("sub.test.com", subRecord.Name);
+        }
+        
+        [Test]
+        public void CAAOutputTest()
+        {
+            DnsZoneFile zone = new DnsZoneFile();
+
+            CAAResourceRecord testRecord = new CAAResourceRecord();
+            testRecord.Name = "example.com";
+            testRecord.Class = "IN";
+            testRecord.flag = 0;
+            testRecord.tag = "iodef";
+            testRecord.value = "letsencrypt.org";
+            zone.Records.Add(testRecord);
+            string sOutput = zone.ToString();
+            Assert.AreEqual(";CAA records\r\nexample.com.\tIN\t\tCAA\t0\tiodef\t\"letsencrypt.org\"\t\r\n\r\n", sOutput);
         }
 
         [Test]

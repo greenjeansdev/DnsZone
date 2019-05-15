@@ -24,6 +24,14 @@ namespace DnsZone.Formatter {
             return record;
         }
 
+        public ResourceRecord Visit(CAAResourceRecord record, DnsZoneFormatterContext context)
+        {
+            context.WritePreference(record.flag);
+            context.WriteTag(record.tag);
+            context.WriteString(record.value);
+            return record;
+        }
+
         public ResourceRecord Visit(NsResourceRecord record, DnsZoneFormatterContext context) {
             context.WriteAndCompressDomainName(record.NameServer);
             return record;
