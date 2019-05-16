@@ -12,6 +12,12 @@ namespace DnsZone.Tests {
     public class DnsZoneFileTests {
 
         [Test]
+        public async Task ParseWhitespace()
+        {
+            var zone = await DnsZoneFile.LoadFromFileAsync(@"Samples/whitespace.com.zone", "whitespace.com");
+        }
+
+        [Test]
         public async Task Parse2Test() {
             var zone = await DnsZoneFile.LoadFromFileAsync(@"Samples/domain.com.zone", "domain.com");
         }
