@@ -12,8 +12,7 @@ namespace DnsZone.Tests {
     public class DnsZoneFileTests {
 
         [Test]
-        public async Task CAARecordParseTest()
-        {
+        public async Task CAARecordParseTest() {
             const string str = @"
 ; zone fragment example.com
 ; mail servers in the same zone
@@ -36,10 +35,31 @@ example.com. IN	CAA 0	iodef		""mailto: hostmaster@example.com""
             Assert.AreEqual("iodef", record.tag);
             Assert.AreEqual("mailto: hostmaster@example.com", record.value);
         }
+        
+        [Test]
+        public async Task ParseWhitespace() {
+            var zone = await DnsZoneFile.LoadFromFileAsync(@"Samples/whitespace.com.zone", "whitespace.com");
+        }
 
         [Test]
         public async Task Parse2Test() {
             var zone = await DnsZoneFile.LoadFromFileAsync(@"Samples/domain.com.zone", "domain.com");
+        }
+
+        [Test]
+        public void EmptyTest() {
+            const string str = @"
+;just single comment
+    ;white space and comments
+
+";
+            try {
+                var zone = DnsZoneFile.Parse(str);
+                Assert.AreEqual(0, zone.Records.Count);
+            } catch (TokenException exc) {
+                Console.WriteLine(exc.Token.Position.GetLine());
+                throw;
+            }
         }
 
         [Test]
@@ -102,8 +122,7 @@ joe IN      TXT (""Located in a black hole""
         }
 
         [Test]
-        public void TxtRecordNoQuotesParseTest()
-        {
+        public void TxtRecordNoQuotesParseTest() {
             const string str = @"
 $ORIGIN example.com.
 ; multiple quotes strings on a single line
