@@ -24,11 +24,10 @@ namespace DnsZone.Formatter {
             return record;
         }
 
-        public ResourceRecord Visit(CAAResourceRecord record, DnsZoneFormatterContext context)
-        {
-            context.WritePreference(record.flag);
-            context.WriteTag(record.tag);
-            context.WriteString(record.value);
+        public ResourceRecord Visit(CAAResourceRecord record, DnsZoneFormatterContext context) {
+            context.WritePreference(record.Flag);
+            context.WriteTag(record.Tag);
+            context.WriteString(record.Value);
             return record;
         }
 

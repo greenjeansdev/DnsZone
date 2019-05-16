@@ -72,27 +72,22 @@ namespace DnsZone.Parser {
             return record;
         }
 
-        public ResourceRecord Visit(CAAResourceRecord record, DnsZoneParseContext context)
-        {
-            record.flag = context.ReadPreference();
-            record.tag = context.Tokens.Dequeue().StringValue;
+        public ResourceRecord Visit(CAAResourceRecord record, DnsZoneParseContext context) {
+            record.Flag = context.ReadPreference();
+            record.Tag = context.Tokens.Dequeue().StringValue;
             var sb = new StringBuilder();
-            while (!context.IsEof)
-            {
+            while (!context.IsEof) {
                 var token = context.Tokens.Peek();
                 if (token.Type == TokenType.NewLine) break;
-                if (token.Type == TokenType.QuotedString || token.Type == TokenType.Literal)
-                {
+                if (token.Type == TokenType.QuotedString || token.Type == TokenType.Literal) {
                     sb.Append(token.StringValue);
                     context.Tokens.Dequeue();
-                }
-                else
-                {
+                } else {
                     throw new NotSupportedException($"unexpected token {token.Type}");
                 }
             }
-            record.value = sb.ToString();
-            
+            record.Value = sb.ToString();
+
             return record;
         }
 
