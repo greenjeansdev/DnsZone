@@ -104,6 +104,7 @@ namespace DnsZone {
                 var token = context.Tokens.Peek();
                 switch (token.Type) {
                     case TokenType.NewLine:
+                    case TokenType.Comments:
                         context.Tokens.Dequeue();
                         break;
                     case TokenType.Control:
@@ -152,23 +153,55 @@ namespace DnsZone {
         }
 
         private static void ParseResourceRecord(DnsZoneParseContext context) {
-            string @class;
-            TimeSpan? ttl;
+            string @class = null;
+            TimeSpan? ttl = null;
 
+            if (context.Tokens.Count == 0) {
+                return;
+            }
+
+            string name = null;
             var nameToken = context.Tokens.Dequeue();
-            var name = nameToken.Type != TokenType.Whitespace ? nameToken.StringValue : "";
+            if (nameToken.Type == TokenType.Literal) {
+                name = nameToken.StringValue;
+            } else if (nameToken.Type == TokenType.Whitespace) {
+                var preview = context.Tokens.Peek();
+                if (preview.Type == TokenType.NewLine || preview.Type == TokenType.NewLine) {
+                    context.Tokens.Dequeue();
+                    return;
+                }
+                name = "";
+            } else if (nameToken.Type == TokenType.Comments) {
+                return;
+            } else if (nameToken.Type == TokenType.NewLine) {
+                return;
+            }
 
-            if (context.TryParseClass(out @class)) {
-                context.TryParseTtl(out ttl);
-            } else if (context.TryParseTtl(out ttl)) {
-                context.TryParseClass(out @class);
+            while (@class == null || ttl == null) {
+                if (context.Tokens.Count == 0) {
+                    if (string.IsNullOrWhiteSpace(name)) {
+                        return;
+                    } else {
+                        throw new TokenException("missing record type", nameToken);
+                    }
+                }
+                var token = context.Tokens.Peek();
+                if (token.Type == TokenType.Literal) {
+                    if (@class == null) {
+                        if (context.TryParseClass(out @class)) continue;
+                    }
+                    if (@ttl == null) {
+                        if (context.TryParseTtl(out ttl)) continue;
+                    }
+                    break;
+                } else if (token.Type == TokenType.Comments || token.Type == TokenType.NewLine) {
+                    throw new TokenException("missing record type", token);
+                } else {
+                    throw new TokenException("unexpected token", token);
+                }
             }
 
             var type = context.ReadResourceRecordType();
-            
-            //An RRT.NULL return  indicates we encountered some kind of 
-            //whitespace instead of the ReadResourceRecordType.
-            if (type == ResourceRecordType.NULL) return;
 
             string domainName;
             try {
@@ -185,7 +218,9 @@ namespace DnsZone {
 
             context.Zone.Records.Add(record);
 
-            context.PrevName = name;
+            if (!string.IsNullOrWhiteSpace(name)) {
+                context.PrevName = name;
+            }
 
             if (!string.IsNullOrWhiteSpace(@class)) {
                 context.PrevClass = @class;
