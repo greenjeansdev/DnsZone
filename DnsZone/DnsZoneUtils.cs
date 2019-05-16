@@ -24,6 +24,7 @@ namespace DnsZone {
                 case "HINFO": return ResourceRecordType.HINFO;
                 case "MX": return ResourceRecordType.MX;
                 case "TXT": return ResourceRecordType.TXT;
+                case "CAA": return ResourceRecordType.CAA;
                 default:
                     throw new NotSupportedException($"unsupported resource record type {val}");
             }
@@ -48,6 +49,7 @@ namespace DnsZone {
                 case ResourceRecordType.HINFO: return "HINFO";
                 case ResourceRecordType.MX: return "MX";
                 case ResourceRecordType.TXT: return "TXT";
+                case ResourceRecordType.CAA: return "CAA";
                 default:
                     throw new NotSupportedException($"unsupported resource record type {val}");
             }
@@ -73,6 +75,7 @@ namespace DnsZone {
                 //case ResourceRecordType.HINFO: return ResourceRecordType.HINFO;
                 case ResourceRecordType.MX: return new MxResourceRecord();
                 case ResourceRecordType.TXT: return new TxtResourceRecord();
+                case ResourceRecordType.CAA: return new CAAResourceRecord();
                 default:
                     throw new NotSupportedException($"unsupported resource record type {type}");
             }

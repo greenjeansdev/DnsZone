@@ -16,6 +16,7 @@
         SRV,
         HINFO,
         MX,
-        TXT
+        TXT,
+        CAA
     }
 }
