@@ -21,5 +21,12 @@
 
         TResult Visit(CAAResourceRecord record, TArg arg);
 
+        TResult Visit(DNSKEYResourceRecord record, TArg arg);
+
+        TResult Visit(RRSIGResourceRecord record, TArg arg);
+        TResult Visit(NSEC3ResourceRecord record, TArg arg);
+
+        TResult Visit(NSEC3PARAMResourceRecord record, TArg arg);
+        TResult Visit(DSResourceRecord record, TArg arg);
     }
 }

@@ -55,6 +55,20 @@ namespace DnsZone.Parser {
             return ushort.Parse(token.StringValue);
         }
 
+        public int ReadInt()
+        {
+            var token = Tokens.Dequeue();
+            if (token.Type != TokenType.Literal) throw new TokenException("preference expected", token);
+            return int.Parse(token.StringValue);
+        }
+
+        public long ReadSignatureTime()
+        {
+            var token = Tokens.Dequeue();
+            if (token.Type != TokenType.Literal) throw new TokenException("preference expected", token);
+            return long.Parse(token.StringValue);
+        }
+
         public string ReadDomainName() {
             var token = Tokens.Dequeue();
             if (token.Type != TokenType.Literal) throw new TokenException("domain name expected", token);

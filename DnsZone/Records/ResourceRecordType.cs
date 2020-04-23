@@ -17,6 +17,11 @@
         HINFO,
         MX,
         TXT,
-        CAA
+        CAA,
+        RRSIG,
+        DNSKEY,
+        NSEC3,
+        NSEC3PARAM,
+        DS
     }
 }

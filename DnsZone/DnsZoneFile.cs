@@ -155,6 +155,7 @@ namespace DnsZone {
         private static void ParseResourceRecord(DnsZoneParseContext context) {
             string @class = null;
             TimeSpan? ttl = null;
+            ResourceRecordType type; 
 
             if (context.Tokens.Count == 0) {
                 return;
@@ -201,7 +202,15 @@ namespace DnsZone {
                 }
             }
 
-            var type = context.ReadResourceRecordType();
+            //Skip current recordd if Record Type is not supported
+            try
+            {
+                type = context.ReadResourceRecordType();
+            }
+            catch (NotSupportedException e)
+            {
+                return;
+            }
 
             string domainName;
             try {

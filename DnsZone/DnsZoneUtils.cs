@@ -25,6 +25,11 @@ namespace DnsZone {
                 case "MX": return ResourceRecordType.MX;
                 case "TXT": return ResourceRecordType.TXT;
                 case "CAA": return ResourceRecordType.CAA;
+                case "NSEC3": return ResourceRecordType.NSEC3;
+                case "NSEC3PARAM": return ResourceRecordType.NSEC3PARAM;
+                case "RRSIG": return ResourceRecordType.RRSIG;
+                case "DNSKEY": return ResourceRecordType.DNSKEY;
+                case "DS": return ResourceRecordType.DS;
                 default:
                     throw new NotSupportedException($"unsupported resource record type {val}");
             }
@@ -50,6 +55,11 @@ namespace DnsZone {
                 case ResourceRecordType.MX: return "MX";
                 case ResourceRecordType.TXT: return "TXT";
                 case ResourceRecordType.CAA: return "CAA";
+                case ResourceRecordType.NSEC3: return "NSEC3";
+                case ResourceRecordType.NSEC3PARAM: return "NSEC3PRAM";
+                case ResourceRecordType.RRSIG: return "RRSIG";
+                case ResourceRecordType.DNSKEY: return "DNSKEY";
+                case ResourceRecordType.DS: return "DS";
                 default:
                     throw new NotSupportedException($"unsupported resource record type {val}");
             }
@@ -76,6 +86,11 @@ namespace DnsZone {
                 case ResourceRecordType.MX: return new MxResourceRecord();
                 case ResourceRecordType.TXT: return new TxtResourceRecord();
                 case ResourceRecordType.CAA: return new CAAResourceRecord();
+                case ResourceRecordType.DNSKEY: return new DNSKEYResourceRecord();
+                case ResourceRecordType.RRSIG: return new RRSIGResourceRecord();
+                case ResourceRecordType.NSEC3: return new NSEC3ResourceRecord();
+                case ResourceRecordType.NSEC3PARAM: return new NSEC3PARAMResourceRecord();
+                case ResourceRecordType.DS: return new DSResourceRecord();
                 default:
                     throw new NotSupportedException($"unsupported resource record type {type}");
             }

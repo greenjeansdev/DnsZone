@@ -32,6 +32,18 @@ namespace DnsZone.Formatter {
             Sb.Append(TAB_CHAR);
         }
 
+        public void WritePreference(int val)
+        {
+            Sb.Append(val);
+            Sb.Append(TAB_CHAR);
+        }
+
+        public void WritePreference(long val)
+        {
+            Sb.Append(val);
+            Sb.Append(TAB_CHAR);
+        }
+
         public void WriteDomainName(string val) {
             Sb.Append(val);
             Sb.Append(TAB_CHAR);
